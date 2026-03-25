@@ -21,6 +21,10 @@
   max-width: var(--modal-max-width);
   position: relative;
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* The Close "X" Button */
