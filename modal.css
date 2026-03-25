@@ -13,21 +13,16 @@
   backdrop-filter: blur(5px);
 }
 
-/* The Popup Box */
 .modal-content-box {
   background-color: var(--modal-bg);
-  padding: 50px 30px 40px;
+  padding: 20px 20px 20px;
   border-radius: 20px;
-  width: 100%;
-  
-  /* 🚨 THE FINAL POLISH: Hug the buttons instead of stretching! */
   width: fit-content; 
-  min-width: 300px; /* Prevents it from being too skinny on tiny screens */
-  max-width: var(--modal-max-width); 
-  
+  max-width: var(--modal-max-width);
   position: relative;
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
+
 /* The Close "X" Button */
 .modal-close {
   position: absolute;
