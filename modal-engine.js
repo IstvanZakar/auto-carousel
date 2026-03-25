@@ -14,18 +14,16 @@
         if (listItems.length > 0) {
           
           // ==========================================
-          // 🎨 THE STYLE SCRAPER: Steal Carrd's CSS
+          // 🎨 THE STYLE SCRAPER
           // ==========================================
-          const styleSource = listItems[0]; // Look at the first Carrd button
+          const styleSource = listItems[0]; 
           const computed = window.getComputedStyle(styleSource);
           
           console.log(`${LOG_PREFIX} Scraping computed styles from Carrd...`);
           
-          // Only overwrite background if Carrd actually set one
-          if (computed.backgroundColor !== 'rgba(0, 0, 0, 0)' && computed.backgroundColor !== 'transparent') {
+          if (computed.backgroundColor && computed.backgroundColor !== 'rgba(0, 0, 0, 0)' && computed.backgroundColor !== 'transparent') {
             instanceConfig.buttonColor = computed.backgroundColor;
-          } else {
-            // Fallback if Carrd's background is on the parent <li> instead of the <a>
+          } else if (styleSource.parentElement) {
             const parentComputed = window.getComputedStyle(styleSource.parentElement);
             instanceConfig.buttonColor = parentComputed.backgroundColor;
           }
@@ -50,7 +48,9 @@
 
           instanceConfig.mainButton = parsedButtons[0];
           instanceConfig.links = parsedButtons.slice(1);
-          console.log(`${LOG_PREFIX} Successfully scraped ${parsedButtons.length} buttons and their styles.`);
+          console.log(`${LOG_PREFIX} Successfully scraped ${parsedButtons.length} buttons.`);
+        } else {
+          console.warn(`${LOG_PREFIX} Element #${carrdButtonsId} found, but no links inside.`);
         }
       } else {
         console.error(`${LOG_PREFIX} FATAL: Could not find hidden buttons ID: #${carrdButtonsId}`);
@@ -72,24 +72,19 @@
       computed: {
         cssVariables() {
           return {
-            // These are now populated by the scraper!
+            // If the scraper fails for any reason, it falls back to these defaults!
             '--btn-bg': this.config.buttonColor || '#E4A074',
             '--btn-text': this.config.textColor || '#7C533A',
             '--btn-font-size': this.config.buttonFontSize || '18px',
             '--btn-pad-y': this.config.buttonPaddingVertical || '15px',
             '--btn-pad-x': this.config.buttonPaddingHorizontal || '20px',
             '--btn-radius': this.config.buttonBorderRadius || '8px',
-            
-            // This still comes from your Carrd embed config
             '--modal-bg': this.config.modalBackgroundColor || '#F4E6C8'
           }
         }
-      },
-      mounted() {
-        // Teleport to body to break out of Carrd stacking contexts
-        document.body.appendChild(this.$el);
       }
     });
+    console.log(`${LOG_PREFIX} Vue instance successfully mounted!`);
   }
 
   // Engine Startup
