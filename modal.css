@@ -1,37 +1,12 @@
 [v-cloak] { display: none; }
 
-/* The Main Trigger Button on the Page */
-.main-contact-btn {
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-  font-size: var(--btn-font-size);
-  padding: var(--btn-pad-y) var(--btn-pad-x);
-  border-radius: var(--btn-radius);
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s, opacity 0.2s;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px; 
-}
-.main-contact-btn:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
-}
-
 /* The Dark Overlay Background */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
   background-color: rgba(0, 0, 0, 0.75);
-  z-index: 9999;
+  z-index: 999999 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,7 +22,6 @@
   max-width: 95vw;
   position: relative;
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  text-align: center;
 }
 
 /* The Close "X" Button */
@@ -61,52 +35,6 @@
   user-select: none;
 }
 .modal-close:hover { color: #333; }
-
-/* The List of Links */
-.link-container {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-/* Button Styling Inside Modal */
-.social-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-  text-decoration: none;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  transition: transform 0.2s;
-  font-size: var(--btn-font-size);
-  padding: var(--btn-pad-y) var(--btn-pad-x);
-  border-radius: var(--btn-radius);
-}
-.social-btn:hover {
-  color: var(--btn-text);
-  text-decoration: none;
-  transform: scale(1.02);
-}
-
-.social-btn span.btn-label {
-  text-align: left;
-  white-space: nowrap;
-  padding-right: 15px;
-}
-
-/* Styles for the injected Carrd SVGs */
-.svg-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.svg-icon-wrapper svg {
-  width: 1.3em;
-  height: 1.3em;
-  fill: currentColor; /* Inherits the var(--btn-text) color! */
-}
 
 /* Vue Animations */
 .pop-enter-active, .pop-leave-active { transition: all 0.3s ease; }
