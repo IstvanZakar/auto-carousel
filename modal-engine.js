@@ -8,29 +8,30 @@
       const originalNode = document.getElementById(carrdTargetId);
       
       if (originalNode) {
+        
+        // 🚨 NEW: MEASURE THE ORIGINAL NODE! 🚨
+        // We measure it, and add 60px to account for the padding inside the popup box.
+        const exactWidth = originalNode.getBoundingClientRect().width;
+        instanceConfig.dynamicMaxWidth = Math.ceil(exactWidth) + 60 + 'px';
+        
         // 1. Clone the node
         const clonedNode = originalNode.cloneNode(true);
         
         // ==========================================
-        // 🧹 THE ULTIMATE LAYOUT SANITIZER 🧹
+        // 🔪 THE CARRD ASSASSIN 🔪
         // ==========================================
-        const layoutNodes = [clonedNode, ...clonedNode.querySelectorAll('div, ul')];
+        const bgLayers = clonedNode.querySelectorAll('.bg, .container-bg, .wrapper-bg, [class*="-bg"]');
+        bgLayers.forEach(bg => bg.remove());
         
+        const layoutNodes = [clonedNode, ...clonedNode.querySelectorAll('div, ul')];
         layoutNodes.forEach(node => {
           node.classList.remove('hidden', 'deferred', 'is-deferred', 'onvisible');
           if (node.style) {
             node.style.setProperty('opacity', '1', 'important');
             node.style.setProperty('visibility', 'visible', 'important');
             node.style.setProperty('transform', 'none', 'important');
-            
-            // 1. Nuke the gray box (Stripping colors, gradients, and shadows)
-            node.style.setProperty('background-color', 'transparent', 'important');
             node.style.setProperty('background', 'transparent', 'important');
-            node.style.setProperty('background-image', 'none', 'important'); 
             node.style.setProperty('box-shadow', 'none', 'important');
-            
-            // 2. Force wrappers to expand
-            node.style.setProperty('width', '100%', 'important');
           }
         });
         // ==========================================
@@ -38,9 +39,9 @@
         const ul = clonedNode.tagName.toLowerCase() === 'ul' ? clonedNode : clonedNode.querySelector('ul');
 
         if (ul) {
-          // Force the UL to stack properly and stretch
           ul.style.setProperty('display', 'flex', 'important');
           ul.style.setProperty('flex-direction', 'column', 'important');
+          ul.style.setProperty('align-items', 'stretch', 'important'); 
           ul.style.setProperty('width', '100%', 'important');
           ul.style.setProperty('padding', '0', 'important'); 
           ul.style.setProperty('margin', '0', 'important');
@@ -48,14 +49,14 @@
           const listItems = ul.querySelectorAll('li');
 
           if (listItems.length > 0) {
-            // Force EVERY individual button to stretch to the edges
-            listItems.forEach(li => {
-                if (li.style) {
-                    li.style.setProperty('width', '100%', 'important');
+            const links = ul.querySelectorAll('a');
+            links.forEach(link => {
+                if (link.style) {
+                    link.style.setProperty('width', '100%', 'important');
+                    link.style.setProperty('box-sizing', 'border-box', 'important');
                 }
             });
 
-            // Extract the Trigger Button
             const triggerUl = ul.cloneNode(false); 
             const triggerLi = listItems[0].cloneNode(true); 
             
@@ -67,24 +68,16 @@
             triggerUl.appendChild(triggerLi);
             instanceConfig.triggerHtml = triggerUl.outerHTML;
 
-            // Build the Modal Content 
             listItems[0].remove(); 
             instanceConfig.modalHtml = clonedNode.outerHTML;
 
-            console.log(`${LOG_PREFIX} Successfully sanitized layouts and stretched buttons!`);
+            console.log(`${LOG_PREFIX} Successfully cloned buttons and scraped width: ${exactWidth}px`);
           }
-        } else {
-          console.warn(`${LOG_PREFIX} Found #${carrdTargetId}, but no UL inside.`);
         }
-      } else {
-        console.error(`${LOG_PREFIX} FATAL: Could not find Target ID: #${carrdTargetId}`);
       }
     }
 
-    if (!document.getElementById(targetId)) {
-      console.error(`${LOG_PREFIX} FATAL: Target #${targetId} not found.`);
-      return;
-    }
+    if (!document.getElementById(targetId)) return;
 
     new Vue({
       el: "#" + targetId,
@@ -95,7 +88,9 @@
       computed: {
         cssVariables() {
           return {
-            '--modal-bg': this.config.modalBackgroundColor || '#F4E6C8'
+            '--modal-bg': this.config.modalBackgroundColor || '#F4E6C8',
+            // 🚨 NEW: INJECT THE SCRAPED WIDTH INTO VUE! 🚨
+            '--modal-max-width': this.config.dynamicMaxWidth || '600px'
           }
         }
       }
