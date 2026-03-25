@@ -18,10 +18,10 @@
   background-color: var(--modal-bg);
   padding: 50px 30px 40px;
   border-radius: 20px;
-  
-  /* 🚨 FIX: Constrain the stretching! */
   width: 100%;
-  max-width: 400px; /* Keeps the popup box looking like a neat column */
+  
+  /* 🚨 NOW IT DYNAMICALLY COPIES CARRD! */
+  max-width: var(--modal-max-width); 
   
   position: relative;
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
