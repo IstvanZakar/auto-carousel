@@ -1,31 +1,41 @@
 (function() {
-  // Factory Function to build a unique Vue instance
   function createCarousel(targetId, galleryId, instanceConfig) {
     
-    // THE SCRAPER: Check if a Carrd Gallery ID was provided
+    // THE SCRAPER: Tailored specifically for Carrd's lazy-loaded galleries
     if (galleryId) {
       const galleryElement = document.getElementById(galleryId);
       if (galleryElement) {
         const images = galleryElement.querySelectorAll('img');
         if (images.length > 0) {
-          // Clear fallback slides and replace with scraped data
-          instanceConfig.slides = [];
+          instanceConfig.slides = []; // Clear the fallback array
+          
           images.forEach((img, idx) => {
-            // Carrd often wraps gallery images in a link to the hi-res version.
-            // We want the hi-res href if it exists, otherwise fallback to the thumbnail src.
-            const hiResUrl = img.parentElement.tagName === 'A' ? img.parentElement.href : img.src;
-            instanceConfig.slides.push({
-              title: img.alt || "Gallery Image " + (idx + 1),
-              image: hiResUrl
-            });
+            let validUrl = "";
+            
+            // Check for Carrd's data-src attribute (lazy loading)
+            if (img.hasAttribute('data-src') && img.getAttribute('data-src') !== "") {
+              // Convert the relative path into a fully qualified absolute URL
+              validUrl = new URL(img.getAttribute('data-src'), window.location.href).href;
+            } 
+            // Fallback to standard src if lazy loading is off
+            else if (img.getAttribute('src') && img.getAttribute('src') !== "") {
+              validUrl = img.src;
+            }
+
+            // Ensure the URL isn't broken or pointing to the root domain
+            if (validUrl && validUrl !== window.location.href && !validUrl.endsWith("/")) {
+              instanceConfig.slides.push({
+                title: img.alt && img.alt !== "Untitled" ? img.alt : "Image " + (idx + 1),
+                image: validUrl
+              });
+            }
           });
         }
       } else {
-        console.warn("Faceify Widget: Could not find hidden gallery with ID ->", galleryId);
+        console.warn("Faceify Carousel: Could not find hidden gallery ID: " + galleryId);
       }
     }
 
-    // Initialize Vue for this specific Target ID
     new Vue({
       el: "#" + targetId,
       data: {
@@ -54,7 +64,6 @@
           }
         },
         duplicatedSlides() {
-          // Fallback in case scraping failed and the array is empty
           if (!this.config.slides || this.config.slides.length === 0) return [];
           return [...this.config.slides, ...this.config.slides];
         },
@@ -121,13 +130,11 @@
     });
   }
 
-  // Process the command queue
   var queue = window.FaceifyCarouselQueue || [];
   queue.forEach(function(item) {
     createCarousel(item.targetId, item.galleryId, item.config);
   });
 
-  // Hijack the queue so future pushes instantly execute
   window.FaceifyCarouselQueue = {
     push: function(item) {
       createCarousel(item.targetId, item.galleryId, item.config);
