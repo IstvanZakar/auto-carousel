@@ -11,25 +11,30 @@
         // 1. Clone the ENTIRE Carrd Container
         const clonedContainer = originalContainer.cloneNode(true);
         
-        // 2. Wake the Container up! (Strip Carrd's hidden wrapper classes)
+        // 2. Wake the Container up!
         clonedContainer.classList.remove('hidden', 'deferred', 'is-deferred', 'onvisible');
-        clonedContainer.style.setProperty('display', 'flex', 'important');
+        
+        // 🚨 THE FIX: Use BLOCK instead of FLEX so Carrd's layout doesn't get crushed!
+        clonedContainer.style.setProperty('display', 'block', 'important');
         clonedContainer.style.setProperty('opacity', '1', 'important');
         clonedContainer.style.setProperty('visibility', 'visible', 'important');
-        
-        // Ensure it centers itself beautifully inside your modal box
         clonedContainer.style.setProperty('margin', '0 auto', 'important'); 
-        clonedContainer.style.setProperty('padding', '0', 'important'); 
+        
+        // Strip the container's background color via JS just in case Carrd forces one!
+        clonedContainer.style.setProperty('background', 'transparent', 'important');
 
         // 3. Find the button list inside the cloned container
         const ul = clonedContainer.querySelector('ul');
 
         if (ul) {
-          // 🚨 THE NEW FIX: Wake up the UL inside the Container! 🚨
+          // Wake up the UL!
           ul.classList.remove('hidden', 'deferred', 'is-deferred', 'onvisible');
+          
+          // 🚨 THE FIX: Put the FLEX property here, on the actual list!
+          ul.style.setProperty('display', 'flex', 'important');
           ul.style.setProperty('opacity', '1', 'important');
           ul.style.setProperty('visibility', 'visible', 'important');
-          // (Notice we are NOT touching 'transform', so your hover animations stay safe!)
+
           const listItems = ul.querySelectorAll('li');
 
           if (listItems.length > 0) {
@@ -45,11 +50,11 @@
             triggerUl.appendChild(triggerLi);
             instanceConfig.triggerHtml = triggerUl.outerHTML;
 
-            // 5. Build the Modal Content (The Container minus the first button)
+            // 5. Build the Modal Content 
             listItems[0].remove(); 
             instanceConfig.modalHtml = clonedContainer.outerHTML;
 
-            console.log(`${LOG_PREFIX} Successfully cloned Carrd Container!`);
+            console.log(`${LOG_PREFIX} Successfully cloned Carrd Container without squishing it!`);
           }
         } else {
           console.warn(`${LOG_PREFIX} Found #${carrdContainerId}, but no UL inside.`);
