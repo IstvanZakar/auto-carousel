@@ -2,27 +2,39 @@
   const LOG_PREFIX = "[Faceify Modal]";
 
   function createModal(targetId, carrdTargetId, instanceConfig) {
-    console.log(`${LOG_PREFIX} Initializing Cloner for: #${targetId}`);
-
     if (carrdTargetId) {
       const originalNode = document.getElementById(carrdTargetId);
       
       if (originalNode) {
+        // 🚨 TARGET: THE WRAPPER 🚨
+        // We look for the '.wrapper' div to find the hardcoded width
+        const wrapper = originalNode.querySelector('.wrapper') || originalNode;
+        const computedStyle = window.getComputedStyle(wrapper);
         
-        // 🚨 NEW: MEASURE THE ORIGINAL NODE! 🚨
-        // We measure it, and add 60px to account for the padding inside the popup box.
-        const exactWidth = originalNode.getBoundingClientRect().width;
-        instanceConfig.dynamicMaxWidth = Math.ceil(exactWidth) + 60 + 'px';
+        // Carrd often puts the width in 'width' or 'max-width'
+        let cssWidth = computedStyle.maxWidth !== 'none' ? computedStyle.maxWidth : computedStyle.width;
         
-        // 1. Clone the node
+        let finalPixelWidth = 504; // Default fallback
+        
+        if (cssWidth && cssWidth.includes('px')) {
+            finalPixelWidth = parseFloat(cssWidth);
+        } else if (cssWidth && cssWidth.includes('rem')) {
+            finalPixelWidth = parseFloat(cssWidth) * 16;
+        }
+
+        // If the section break killed the width (0px), we use the default
+        if (finalPixelWidth < 50) finalPixelWidth = 504;
+
+        // Add 80px for modal padding (40px each side)
+        instanceConfig.dynamicMaxWidth = Math.ceil(finalPixelWidth) + 80 + 'px';
+        
         const clonedNode = originalNode.cloneNode(true);
         
-        // ==========================================
-        // 🔪 THE CARRD ASSASSIN 🔪
-        // ==========================================
+        // Kill Backgrounds
         const bgLayers = clonedNode.querySelectorAll('.bg, .container-bg, .wrapper-bg, [class*="-bg"]');
         bgLayers.forEach(bg => bg.remove());
         
+        // Sanitize Layouts
         const layoutNodes = [clonedNode, ...clonedNode.querySelectorAll('div, ul')];
         layoutNodes.forEach(node => {
           node.classList.remove('hidden', 'deferred', 'is-deferred', 'onvisible');
@@ -34,7 +46,6 @@
             node.style.setProperty('box-shadow', 'none', 'important');
           }
         });
-        // ==========================================
 
         const ul = clonedNode.tagName.toLowerCase() === 'ul' ? clonedNode : clonedNode.querySelector('ul');
 
@@ -43,11 +54,8 @@
           ul.style.setProperty('flex-direction', 'column', 'important');
           ul.style.setProperty('align-items', 'stretch', 'important'); 
           ul.style.setProperty('width', '100%', 'important');
-          ul.style.setProperty('padding', '0', 'important'); 
-          ul.style.setProperty('margin', '0', 'important');
 
           const listItems = ul.querySelectorAll('li');
-
           if (listItems.length > 0) {
             const links = ul.querySelectorAll('a');
             links.forEach(link => {
@@ -59,19 +67,13 @@
 
             const triggerUl = ul.cloneNode(false); 
             const triggerLi = listItems[0].cloneNode(true); 
-            
             const triggerA = triggerLi.querySelector('a');
-            if (triggerA) {
-              triggerA.setAttribute('href', 'javascript:void(0);');
-            }
+            if (triggerA) triggerA.setAttribute('href', 'javascript:void(0);');
             
             triggerUl.appendChild(triggerLi);
             instanceConfig.triggerHtml = triggerUl.outerHTML;
-
             listItems[0].remove(); 
             instanceConfig.modalHtml = clonedNode.outerHTML;
-
-            console.log(`${LOG_PREFIX} Successfully cloned buttons and scraped width: ${exactWidth}px`);
           }
         }
       }
@@ -81,16 +83,12 @@
 
     new Vue({
       el: "#" + targetId,
-      data: {
-        config: instanceConfig,
-        isOpen: false
-      },
+      data: { config: instanceConfig, isOpen: false },
       computed: {
         cssVariables() {
           return {
             '--modal-bg': this.config.modalBackgroundColor || '#F4E6C8',
-            // 🚨 NEW: INJECT THE SCRAPED WIDTH INTO VUE! 🚨
-            '--modal-max-width': this.config.dynamicMaxWidth || '600px'
+            '--modal-max-width': this.config.dynamicMaxWidth
           }
         }
       }
@@ -98,13 +96,6 @@
   }
 
   var queue = window.FaceifyModalQueue || [];
-  queue.forEach(function(item) {
-    createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config); 
-  });
-
-  window.FaceifyModalQueue = {
-    push: function(item) {
-      createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config);
-    }
-  };
+  queue.forEach(item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config));
+  window.FaceifyModalQueue = { push: item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config) };
 })();
