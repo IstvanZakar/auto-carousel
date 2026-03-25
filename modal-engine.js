@@ -14,11 +14,10 @@
         // 2. Strip away common Carrd "hidden" animation classes
         clonedUl.classList.remove('deferred', 'is-deferred', 'hidden', 'onvisible');
         
-        // 3. Force visibility on the wrapper using inline !important
+        // 3. FIX: Force visibility ONLY on the wrapper, and LEAVE TRANSFORM ALONE! 🚨
         clonedUl.style.setProperty('opacity', '1', 'important');
         clonedUl.style.setProperty('visibility', 'visible', 'important');
-        clonedUl.style.setProperty('transform', 'none', 'important');
-        clonedUl.style.setProperty('display', 'flex', 'important'); 
+        clonedUl.style.setProperty('display', 'flex', 'important');
         
         // 4. Force visibility on ALL child elements (li, a, svg, span)
         const allNodes = clonedUl.querySelectorAll('*');
