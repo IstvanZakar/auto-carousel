@@ -1,61 +1,56 @@
 (function() {
   const LOG_PREFIX = "[Faceify Modal]";
 
-  function createModal(targetId, carrdButtonsId, instanceConfig) {
-    console.log(`${LOG_PREFIX} Initializing DOM Cloner for: #${targetId}`);
+  function createModal(targetId, carrdContainerId, instanceConfig) {
+    console.log(`${LOG_PREFIX} Initializing Container Cloner for: #${targetId}`);
 
-    if (carrdButtonsId) {
-      const originalUl = document.getElementById(carrdButtonsId);
+    if (carrdContainerId) {
+      const originalContainer = document.getElementById(carrdContainerId);
       
-      if (originalUl) {
-        // 1. Clone the entire UL (Keeps the ID intact so Carrd styles still apply!)
-        const clonedUl = originalUl.cloneNode(true);
+      if (originalContainer) {
+        // 1. Clone the ENTIRE Carrd Container
+        const clonedContainer = originalContainer.cloneNode(true);
         
-        // 2. Strip away common Carrd "hidden" animation classes
-        clonedUl.classList.remove('deferred', 'is-deferred', 'hidden', 'onvisible');
+        // 2. Wake the Container up! (Strip Carrd's hidden wrapper classes)
+        clonedContainer.classList.remove('hidden', 'deferred', 'is-deferred', 'onvisible');
+        clonedContainer.style.setProperty('display', 'flex', 'important');
+        clonedContainer.style.setProperty('opacity', '1', 'important');
+        clonedContainer.style.setProperty('visibility', 'visible', 'important');
         
-        // 3. FIX: Force visibility ONLY on the wrapper, and LEAVE TRANSFORM ALONE! 🚨
-        clonedUl.style.setProperty('opacity', '1', 'important');
-        clonedUl.style.setProperty('visibility', 'visible', 'important');
-        clonedUl.style.setProperty('display', 'flex', 'important');
-        
-        // 4. Force visibility on ALL child elements (li, a, svg, span)
-        const allNodes = clonedUl.querySelectorAll('*');
-        allNodes.forEach(node => {
-          if (node.style) {
-            node.style.setProperty('opacity', '1', 'important');
-            node.style.setProperty('visibility', 'visible', 'important');
-            node.style.setProperty('transform', 'none', 'important');
-            node.style.setProperty('pointer-events', 'auto', 'important');
+        // Ensure it centers itself beautifully inside your modal box
+        clonedContainer.style.setProperty('margin', '0 auto', 'important'); 
+        clonedContainer.style.setProperty('padding', '0', 'important'); 
+
+        // 3. Find the button list inside the cloned container
+        const ul = clonedContainer.querySelector('ul');
+
+        if (ul) {
+          const listItems = ul.querySelectorAll('li');
+
+          if (listItems.length > 0) {
+            // 4. Extract the Trigger Button
+            const triggerUl = ul.cloneNode(false); 
+            const triggerLi = listItems[0].cloneNode(true); 
+            
+            const triggerA = triggerLi.querySelector('a');
+            if (triggerA) {
+              triggerA.setAttribute('href', 'javascript:void(0);');
+            }
+            
+            triggerUl.appendChild(triggerLi);
+            instanceConfig.triggerHtml = triggerUl.outerHTML;
+
+            // 5. Build the Modal Content (The Container minus the first button)
+            listItems[0].remove(); 
+            instanceConfig.modalHtml = clonedContainer.outerHTML;
+
+            console.log(`${LOG_PREFIX} Successfully cloned Carrd Container!`);
           }
-        });
-
-        const listItems = clonedUl.querySelectorAll('li');
-
-        if (listItems.length > 0) {
-          // 5. Build the Trigger Button HTML
-          const triggerUl = clonedUl.cloneNode(false); // Copies the sanitized UL wrapper
-          const triggerLi = listItems[0].cloneNode(true); 
-          
-          const triggerA = triggerLi.querySelector('a');
-          if (triggerA) {
-            // Prevent the trigger button from navigating away
-            triggerA.setAttribute('href', 'javascript:void(0);');
-          }
-          
-          triggerUl.appendChild(triggerLi);
-          instanceConfig.triggerHtml = triggerUl.outerHTML;
-
-          // 6. Build the Modal Links HTML
-          clonedUl.removeChild(listItems[0]); 
-          instanceConfig.modalHtml = clonedUl.outerHTML;
-
-          console.log(`${LOG_PREFIX} Successfully cloned Carrd DOM and forced visibility.`);
         } else {
-          console.warn(`${LOG_PREFIX} Element #${carrdButtonsId} found, but no links inside.`);
+          console.warn(`${LOG_PREFIX} Found #${carrdContainerId}, but no UL inside.`);
         }
       } else {
-        console.error(`${LOG_PREFIX} FATAL: Could not find hidden Carrd list: #${carrdButtonsId}`);
+        console.error(`${LOG_PREFIX} FATAL: Could not find Container ID: #${carrdContainerId}`);
       }
     }
 
@@ -64,7 +59,6 @@
       return;
     }
 
-    // Initialize Vue
     new Vue({
       el: "#" + targetId,
       data: {
@@ -79,18 +73,16 @@
         }
       }
     });
-    console.log(`${LOG_PREFIX} Vue instance successfully mounted!`);
   }
 
-  // Engine Startup
   var queue = window.FaceifyModalQueue || [];
   queue.forEach(function(item) {
-    createModal(item.targetId, item.carrdButtonsId, item.config);
+    createModal(item.targetId, item.carrdContainerId, item.config);
   });
 
   window.FaceifyModalQueue = {
     push: function(item) {
-      createModal(item.targetId, item.carrdButtonsId, item.config);
+      createModal(item.targetId, item.carrdContainerId, item.config);
     }
   };
 })();
