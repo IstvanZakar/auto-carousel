@@ -20,7 +20,9 @@
   border-radius: 20px;
   width: 100%;
   
-  /* 🚨 NOW IT DYNAMICALLY COPIES CARRD! */
+  /* 🚨 THE FINAL POLISH: Hug the buttons instead of stretching! */
+  width: fit-content; 
+  min-width: 300px; /* Prevents it from being too skinny on tiny screens */
   max-width: var(--modal-max-width); 
   
   position: relative;
