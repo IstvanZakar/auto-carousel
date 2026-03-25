@@ -25,6 +25,11 @@
         const ul = clonedContainer.querySelector('ul');
 
         if (ul) {
+          // 🚨 THE NEW FIX: Wake up the UL inside the Container! 🚨
+          ul.classList.remove('hidden', 'deferred', 'is-deferred', 'onvisible');
+          ul.style.setProperty('opacity', '1', 'important');
+          ul.style.setProperty('visibility', 'visible', 'important');
+          // (Notice we are NOT touching 'transform', so your hover animations stay safe!)
           const listItems = ul.querySelectorAll('li');
 
           if (listItems.length > 0) {
