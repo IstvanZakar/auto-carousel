@@ -8,28 +8,52 @@
       const originalUl = document.getElementById(carrdButtonsId);
       
       if (originalUl) {
-        // 1. Clone the entire UL so we don't destroy the hidden original
+        // 1. Clone the entire UL (Keeps the ID intact so Carrd styles still apply!)
         const clonedUl = originalUl.cloneNode(true);
+        
+        // 2. Strip away common Carrd "hidden" animation classes
+        clonedUl.classList.remove('deferred', 'is-deferred', 'hidden', 'onvisible');
+        
+        // 3. Force visibility on the wrapper using inline !important
+        clonedUl.style.setProperty('opacity', '1', 'important');
+        clonedUl.style.setProperty('visibility', 'visible', 'important');
+        clonedUl.style.setProperty('transform', 'none', 'important');
+        clonedUl.style.setProperty('display', 'flex', 'important'); 
+        
+        // 4. Force visibility on ALL child elements (li, a, svg, span)
+        const allNodes = clonedUl.querySelectorAll('*');
+        allNodes.forEach(node => {
+          if (node.style) {
+            node.style.setProperty('opacity', '1', 'important');
+            node.style.setProperty('visibility', 'visible', 'important');
+            node.style.setProperty('transform', 'none', 'important');
+            node.style.setProperty('pointer-events', 'auto', 'important');
+          }
+        });
+
         const listItems = clonedUl.querySelectorAll('li');
 
         if (listItems.length > 0) {
-          // 2. Build the Trigger Button HTML
-          const triggerUl = clonedUl.cloneNode(false); // Copies the UL wrapper and its classes, but empty
-          const triggerLi = listItems[0].cloneNode(true); // Copies the first item
+          // 5. Build the Trigger Button HTML
+          const triggerUl = clonedUl.cloneNode(false); // Copies the sanitized UL wrapper
+          const triggerLi = listItems[0].cloneNode(true); 
           
           const triggerA = triggerLi.querySelector('a');
           if (triggerA) {
-            // Swap the href so it doesn't navigate away, but keeps hover effects!
+            // Prevent the trigger button from navigating away
             triggerA.setAttribute('href', 'javascript:void(0);');
           }
+          
           triggerUl.appendChild(triggerLi);
           instanceConfig.triggerHtml = triggerUl.outerHTML;
 
-          // 3. Build the Modal Links HTML
-          clonedUl.removeChild(listItems[0]); // Remove the first item from the modal list
+          // 6. Build the Modal Links HTML
+          clonedUl.removeChild(listItems[0]); 
           instanceConfig.modalHtml = clonedUl.outerHTML;
 
-          console.log(`${LOG_PREFIX} Successfully cloned Carrd DOM structure.`);
+          console.log(`${LOG_PREFIX} Successfully cloned Carrd DOM and forced visibility.`);
+        } else {
+          console.warn(`${LOG_PREFIX} Element #${carrdButtonsId} found, but no links inside.`);
         }
       } else {
         console.error(`${LOG_PREFIX} FATAL: Could not find hidden Carrd list: #${carrdButtonsId}`);
@@ -56,6 +80,7 @@
         }
       }
     });
+    console.log(`${LOG_PREFIX} Vue instance successfully mounted!`);
   }
 
   // Engine Startup
