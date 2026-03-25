@@ -1,41 +1,64 @@
 (function() {
+  const LOG_PREFIX = "[Faceify Widget]";
+
   function createCarousel(targetId, galleryId, instanceConfig) {
-    
-    // THE SCRAPER: Tailored specifically for Carrd's lazy-loaded galleries
+    console.log(`${LOG_PREFIX} Initializing carousel for Target ID: #${targetId}`);
+
+    // THE SCRAPER
     if (galleryId) {
+      console.log(`${LOG_PREFIX} Searching DOM for hidden gallery ID: #${galleryId}`);
       const galleryElement = document.getElementById(galleryId);
+      
       if (galleryElement) {
         const images = galleryElement.querySelectorAll('img');
+        console.log(`${LOG_PREFIX} Found ${images.length} image nodes in gallery.`);
+        
         if (images.length > 0) {
           instanceConfig.slides = []; // Clear the fallback array
+          let validImageCount = 0;
           
           images.forEach((img, idx) => {
             let validUrl = "";
             
-            // Check for Carrd's data-src attribute (lazy loading)
+            // 1. Check for Carrd's lazy-loading attribute
             if (img.hasAttribute('data-src') && img.getAttribute('data-src') !== "") {
-              // Convert the relative path into a fully qualified absolute URL
               validUrl = new URL(img.getAttribute('data-src'), window.location.href).href;
             } 
-            // Fallback to standard src if lazy loading is off
+            // 2. Fallback to standard src
             else if (img.getAttribute('src') && img.getAttribute('src') !== "") {
               validUrl = img.src;
             }
 
-            // Ensure the URL isn't broken or pointing to the root domain
+            // 3. Validation: Ensure it's not pointing to the root domain
             if (validUrl && validUrl !== window.location.href && !validUrl.endsWith("/")) {
+              validImageCount++;
               instanceConfig.slides.push({
                 title: img.alt && img.alt !== "Untitled" ? img.alt : "Image " + (idx + 1),
                 image: validUrl
               });
+              console.log(`${LOG_PREFIX} Loaded Image ${validImageCount}:`, validUrl);
+            } else {
+              console.warn(`${LOG_PREFIX} Skipped invalid or empty image URL at index ${idx}`);
             }
           });
+          
+          console.log(`${LOG_PREFIX} Successfully loaded ${validImageCount} valid images into the config.`);
+        } else {
+          console.warn(`${LOG_PREFIX} Gallery #${galleryId} exists but contains no <img> tags.`);
         }
       } else {
-        console.warn("Faceify Carousel: Could not find hidden gallery ID: " + galleryId);
+        console.error(`${LOG_PREFIX} FATAL: Could not find hidden gallery ID: #${galleryId} on the page.`);
       }
     }
 
+    // Initialize Vue
+    if (!document.getElementById(targetId)) {
+      console.error(`${LOG_PREFIX} FATAL: Could not find Target HTML element: #${targetId}. Vue cannot mount.`);
+      return; 
+    }
+
+    console.log(`${LOG_PREFIX} Mounting Vue instance to #${targetId}...`);
+    
     new Vue({
       el: "#" + targetId,
       data: {
@@ -64,7 +87,10 @@
           }
         },
         duplicatedSlides() {
-          if (!this.config.slides || this.config.slides.length === 0) return [];
+          if (!this.config.slides || this.config.slides.length === 0) {
+            console.warn(`${LOG_PREFIX} Vue is rendering with an empty slides array.`);
+            return [];
+          }
           return [...this.config.slides, ...this.config.slides];
         },
         trackStyle() {
@@ -118,6 +144,7 @@
         }
       },
       mounted() {
+        console.log(`${LOG_PREFIX} Vue instance successfully mounted on #${targetId}`);
         if (this.duplicatedSlides.length > 0) {
           this.animationFrameId = requestAnimationFrame(this.animate);
         }
@@ -130,13 +157,22 @@
     });
   }
 
+  // Engine Startup
+  console.log(`${LOG_PREFIX} Engine Loaded. Processing Command Queue...`);
   var queue = window.FaceifyCarouselQueue || [];
+  
+  if (queue.length === 0) {
+    console.log(`${LOG_PREFIX} Queue is empty. Waiting for Carrd to inject embeds.`);
+  }
+
   queue.forEach(function(item) {
     createCarousel(item.targetId, item.galleryId, item.config);
   });
 
+  // Hijack the queue so future pushes instantly execute
   window.FaceifyCarouselQueue = {
     push: function(item) {
+      console.log(`${LOG_PREFIX} New embed detected on the fly! Pushing to factory...`);
       createCarousel(item.targetId, item.galleryId, item.config);
     }
   };
