@@ -44,6 +44,13 @@
             node.style.setProperty('transform', 'none', 'important');
             node.style.setProperty('background', 'transparent', 'important');
             node.style.setProperty('box-shadow', 'none', 'important');
+
+            // 🚨 THE FIX: Nuke Carrd's internal padding/margins 🚨
+            // This prevents the "50px too short" issue!
+            node.style.setProperty('padding', '0', 'important');
+            node.style.setProperty('margin', '0', 'important');
+            node.style.setProperty('width', '100%', 'important');
+            node.style.setProperty('max-width', '100%', 'important');
           }
         });
 
