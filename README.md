@@ -16,4 +16,5 @@ Add the following dependencies to the Carrd page:
 Load the engine via jsDelivr in a Carrd Custom Code Embed:
 
 `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/IsvanZakar/auto-carousel@main/carousel.css">`
+
 `<script src="https://cdn.jsdelivr.net/gh/IstvanZakar/auto-carousel@main/carousel-engine.js" defer></script>`
