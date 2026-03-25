@@ -18,12 +18,14 @@
   background-color: var(--modal-bg);
   padding: 50px 30px 40px;
   border-radius: 20px;
-  width: max-content;
-  max-width: 95vw;
+  
+  /* 🚨 FIX: Constrain the stretching! */
+  width: 100%;
+  max-width: 400px; /* Keeps the popup box looking like a neat column */
+  
   position: relative;
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
-
 /* The Close "X" Button */
 .modal-close {
   position: absolute;
