@@ -1,8 +1,6 @@
 (function() {
-  const LOG_PREFIX = "[Faceify Modal]";
-
+  
   function createModal(targetId, carrdTargetId, instanceConfig) {
-    console.log(`${LOG_PREFIX} Initializing Cloner for: #${targetId}`);
 
     if (carrdTargetId) {
       const originalNode = document.getElementById(carrdTargetId);
@@ -12,12 +10,7 @@
         const wrapper = originalNode.querySelector('.wrapper') || originalNode;
         const computedStyle = window.getComputedStyle(wrapper);
         
-        // 🚨 DEEP LOGGING 🚨
-        console.group(`${LOG_PREFIX} Width Debugger for #${carrdTargetId}`);
-        console.log("Source Element:", wrapper);
-        console.log("Computed Width:", computedStyle.width);
-        console.log("Computed Max-Width:", computedStyle.maxWidth);
-        
+       
         // 2. SCRAPE THE WIDTH
         // We look for max-width (Carrd's favorite) first, then fallback to width.
         let cssWidth = computedStyle.maxWidth !== 'none' ? computedStyle.maxWidth : computedStyle.width;
@@ -34,19 +27,14 @@
         // we use the preferredWidth from your HTML config or a safe 684px.
         if (instanceConfig.preferredWidth) {
             finalPixelWidth = instanceConfig.preferredWidth;
-            console.log("Using Manual Preferred Width:", finalPixelWidth);
         } else if (finalPixelWidth < 50) {
             finalPixelWidth = 684; 
-            console.warn("Width Scrape failed (0px). Falling back to default: 684px");
         }
 
         // 4. FINAL CALCULATION
         // We take the button width + 40px (for your 20px + 20px beige box padding)
         const totalModalWidth = Math.ceil(finalPixelWidth) + 40;
         instanceConfig.dynamicMaxWidth = totalModalWidth + 'px';
-        
-        console.log("Calculated Total Modal Width:", instanceConfig.dynamicMaxWidth);
-        console.groupEnd();
 
         // 5. CLONE AND SANITIZE
         const clonedNode = originalNode.cloneNode(true);
@@ -108,7 +96,47 @@
       }
     }
 
+    // ==========================================
+    // NEW: Inject Button into the Remote Control
+    // ==========================================
+    // (item is passed in from the queue below)
+    const queueItem = window.FaceifyModalQueue.find(q => q.targetId === targetId);
+    if (queueItem && queueItem.triggerId) {
+        const triggerDiv = document.getElementById(queueItem.triggerId);
+        if (triggerDiv && instanceConfig.triggerHtml) {
+            triggerDiv.innerHTML = instanceConfig.triggerHtml;
+        }
+    }
+
     if (!document.getElementById(targetId)) return;
+
+    // 7. INITIALIZE VUE
+    const vm = new Vue({
+      el: "#" + targetId,
+      data: { config: instanceConfig, isOpen: false },
+      computed: {
+        cssVariables() {
+          return {
+            '--modal-bg': this.config.modalBackgroundColor || '#F4E6C8',
+            '--modal-max-width': this.config.dynamicMaxWidth
+          }
+        }
+      }
+      // Note: You can completely delete the mounted() / appendChild script now!
+    });
+
+    // ==========================================
+    // NEW: Expose Vue to Window
+    // ==========================================
+    window.FaceifyModals = window.FaceifyModals || {};
+    window.FaceifyModals[targetId] = vm;
+  }
+
+  // QUEUE HANDLING
+  var queue = window.FaceifyModalQueue || [];
+  queue.forEach(item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config));
+  window.FaceifyModalQueue = { push: item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config) };
+})();
 
     // 7. INITIALIZE VUE
     new Vue({
