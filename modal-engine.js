@@ -52,6 +52,25 @@
           }
         });
 
+        const allClonedLinks = clonedNode.querySelectorAll('a');
+        allClonedLinks.forEach(link => {
+            const href = link.getAttribute('href') || '';
+
+            // 1. Social & External Links -> Force New Tab
+            if (href.includes('facebook.com') || href.includes('instagram.com')) {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer'); // Security best practice
+            }
+
+            // 2. Mailto Links -> Force Native Mail App Handoff
+            if (href.includes('mailto:')) {
+                // Using _top prevents the browser from opening a useless blank tab
+                link.setAttribute('target', '_top'); 
+                // Strip any dead Carrd anti-spam scripts that failed to clone
+                link.removeAttribute('onclick'); 
+            }
+        });
+
         // 3. TARGET THE BUTTON LIST (UL)
         const ul = clonedNode.tagName.toLowerCase() === 'ul' ? clonedNode : clonedNode.querySelector('ul');
 
