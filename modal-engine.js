@@ -1,18 +1,18 @@
 (function() {
-  
-  function createModal(targetId, carrdTargetId, instanceConfig) {
+  const LOG_PREFIX = "[Faceify Modal]";
+
+  // Added 'triggerClass' to the arguments
+  function createModal(targetId, carrdTargetId, instanceConfig, triggerClass) {
+    console.log(`${LOG_PREFIX} Initializing Cloner for: #${targetId}`);
 
     if (carrdTargetId) {
       const originalNode = document.getElementById(carrdTargetId);
       
       if (originalNode) {
-        // 1. SELECT THE WRAPPER
+        // 1. SELECT THE WRAPPER & SCRAPE WIDTH
         const wrapper = originalNode.querySelector('.wrapper') || originalNode;
         const computedStyle = window.getComputedStyle(wrapper);
         
-       
-        // 2. SCRAPE THE WIDTH
-        // We look for max-width (Carrd's favorite) first, then fallback to width.
         let cssWidth = computedStyle.maxWidth !== 'none' ? computedStyle.maxWidth : computedStyle.width;
         let finalPixelWidth = 0;
 
@@ -22,28 +22,21 @@
             finalPixelWidth = parseFloat(cssWidth) * 16;
         }
 
-        // 3. APPLY OVERRIDE OR FALLBACK
-        // If the section break killed the width (reported as 0 or 100%), 
-        // we use the preferredWidth from your HTML config or a safe 684px.
         if (instanceConfig.preferredWidth) {
             finalPixelWidth = instanceConfig.preferredWidth;
         } else if (finalPixelWidth < 50) {
             finalPixelWidth = 684; 
         }
 
-        // 4. FINAL CALCULATION
-        // We take the button width + 40px (for your 20px + 20px beige box padding)
         const totalModalWidth = Math.ceil(finalPixelWidth) + 40;
         instanceConfig.dynamicMaxWidth = totalModalWidth + 'px';
 
-        // 5. CLONE AND SANITIZE
+        // 2. CLONE AND SANITIZE
         const clonedNode = originalNode.cloneNode(true);
         
-        // Assassinate Carrd's hidden background layers
         const bgLayers = clonedNode.querySelectorAll('.bg, .container-bg, .wrapper-bg, [class*="-bg"]');
         bgLayers.forEach(bg => bg.remove());
         
-        // Wake up layout wrappers and strip their internal "gutters"
         const layoutNodes = [clonedNode, ...clonedNode.querySelectorAll('div, ul')];
         layoutNodes.forEach(node => {
           node.classList.remove('hidden', 'deferred', 'is-deferred', 'onvisible');
@@ -59,7 +52,7 @@
           }
         });
 
-        // 6. TARGET THE BUTTON LIST (UL)
+        // 3. TARGET THE BUTTON LIST (UL)
         const ul = clonedNode.tagName.toLowerCase() === 'ul' ? clonedNode : clonedNode.querySelector('ul');
 
         if (ul) {
@@ -70,7 +63,6 @@
 
           const listItems = ul.querySelectorAll('li');
           if (listItems.length > 0) {
-            // Force the actual links to stretch
             const links = ul.querySelectorAll('a');
             links.forEach(link => {
                 if (link.style) {
@@ -83,6 +75,7 @@
             const triggerUl = ul.cloneNode(false); 
             const triggerLi = listItems[0].cloneNode(true); 
             const triggerA = triggerLi.querySelector('a');
+            // Neutralize the cloned link so our onclick wrapper handles the event
             if (triggerA) triggerA.setAttribute('href', 'javascript:void(0);');
             
             triggerUl.appendChild(triggerLi);
@@ -97,20 +90,24 @@
     }
 
     // ==========================================
-    // NEW: Inject Button into the Remote Control
+    // 4. INJECT BUTTON INTO ALL REMOTE CONTROLS
     // ==========================================
-    // (item is passed in from the queue below)
-    const queueItem = window.FaceifyModalQueue.find(q => q.targetId === targetId);
-    if (queueItem && queueItem.triggerId) {
-        const triggerDiv = document.getElementById(queueItem.triggerId);
-        if (triggerDiv && instanceConfig.triggerHtml) {
-            triggerDiv.innerHTML = instanceConfig.triggerHtml;
-        }
+    if (triggerClass && instanceConfig.triggerHtml) {
+        // Find every element on the page with this class
+        const triggerDivs = document.querySelectorAll('.' + triggerClass);
+        
+        triggerDivs.forEach(div => {
+            div.innerHTML = instanceConfig.triggerHtml;
+            console.log(`${LOG_PREFIX} Injected remote control button into .${triggerClass}`);
+        });
     }
 
+    // Safety check: Make sure the Central Hub actually exists on the page
     if (!document.getElementById(targetId)) return;
 
-    // 7. INITIALIZE VUE
+    // ==========================================
+    // 5. INITIALIZE CENTRAL VUE MODAL
+    // ==========================================
     const vm = new Vue({
       el: "#" + targetId,
       data: { config: instanceConfig, isOpen: false },
@@ -122,39 +119,19 @@
           }
         }
       }
-      // Note: You can completely delete the mounted() / appendChild script now!
     });
 
     // ==========================================
-    // NEW: Expose Vue to Window
+    // 6. EXPOSE VUE TO WINDOW FOR REMOTE CONTROLS
     // ==========================================
     window.FaceifyModals = window.FaceifyModals || {};
     window.FaceifyModals[targetId] = vm;
+    console.log(`${LOG_PREFIX} Successfully initialized Central Modal Hub: #${targetId}`);
   }
 
   // QUEUE HANDLING
   var queue = window.FaceifyModalQueue || [];
-  queue.forEach(item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config));
-  window.FaceifyModalQueue = { push: item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config) };
-})();
-
-    // 7. INITIALIZE VUE
-    new Vue({
-      el: "#" + targetId,
-      data: { config: instanceConfig, isOpen: false },
-      computed: {
-        cssVariables() {
-          return {
-            '--modal-bg': this.config.modalBackgroundColor || '#F4E6C8',
-            '--modal-max-width': this.config.dynamicMaxWidth
-          }
-        }
-      }
-    });
-  }
-
-  // QUEUE HANDLING
-  var queue = window.FaceifyModalQueue || [];
-  queue.forEach(item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config));
-  window.FaceifyModalQueue = { push: item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config) };
+  // Notice we added item.triggerClass to the mapping below
+  queue.forEach(item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config, item.triggerClass));
+  window.FaceifyModalQueue = { push: item => createModal(item.targetId, item.carrdButtonsId || item.carrdContainerId, item.config, item.triggerClass) };
 })();
