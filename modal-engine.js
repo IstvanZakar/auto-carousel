@@ -3,8 +3,6 @@
 
   // Added 'triggerClass' to the arguments
   function createModal(targetId, carrdTargetId, instanceConfig, triggerClass) {
-    console.log(`${LOG_PREFIX} Initializing Cloner for: #${targetId}`);
-
     if (carrdTargetId) {
       const originalNode = document.getElementById(carrdTargetId);
       
@@ -117,7 +115,6 @@
         
         triggerDivs.forEach(div => {
             div.innerHTML = instanceConfig.triggerHtml;
-            console.log(`${LOG_PREFIX} Injected remote control button into .${triggerClass}`);
         });
     }
 
@@ -145,7 +142,6 @@
     // ==========================================
     window.FaceifyModals = window.FaceifyModals || {};
     window.FaceifyModals[targetId] = vm;
-    console.log(`${LOG_PREFIX} Successfully initialized Central Modal Hub: #${targetId}`);
   }
 
   // QUEUE HANDLING
