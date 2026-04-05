@@ -2,16 +2,12 @@
   const LOG_PREFIX = "[Faceify Widget]";
 
   function createCarousel(targetId, galleryId, instanceConfig) {
-    console.log(`${LOG_PREFIX} Initializing carousel for Target ID: #${targetId}`);
-
     // THE SCRAPER
     if (galleryId) {
-      console.log(`${LOG_PREFIX} Searching DOM for hidden gallery ID: #${galleryId}`);
       const galleryElement = document.getElementById(galleryId);
       
       if (galleryElement) {
         const images = galleryElement.querySelectorAll('img');
-        console.log(`${LOG_PREFIX} Found ${images.length} image nodes in gallery.`);
         
         if (images.length > 0) {
           instanceConfig.slides = []; // Clear the fallback array
@@ -36,13 +32,10 @@
                 title: img.alt && img.alt !== "Untitled" ? img.alt : "Image " + (idx + 1),
                 image: validUrl
               });
-              console.log(`${LOG_PREFIX} Loaded Image ${validImageCount}:`, validUrl);
             } else {
               console.warn(`${LOG_PREFIX} Skipped invalid or empty image URL at index ${idx}`);
             }
           });
-          
-          console.log(`${LOG_PREFIX} Successfully loaded ${validImageCount} valid images into the config.`);
         } else {
           console.warn(`${LOG_PREFIX} Gallery #${galleryId} exists but contains no <img> tags.`);
         }
@@ -55,10 +48,7 @@
     if (!document.getElementById(targetId)) {
       console.error(`${LOG_PREFIX} FATAL: Could not find Target HTML element: #${targetId}. Vue cannot mount.`);
       return; 
-    }
-
-    console.log(`${LOG_PREFIX} Mounting Vue instance to #${targetId}...`);
-    
+    }    
     new Vue({
       el: "#" + targetId,
       data: {
@@ -144,7 +134,6 @@
         }
       },
       mounted() {
-        console.log(`${LOG_PREFIX} Vue instance successfully mounted on #${targetId}`);
         if (this.duplicatedSlides.length > 0) {
           this.animationFrameId = requestAnimationFrame(this.animate);
         }
@@ -156,9 +145,6 @@
       }
     });
   }
-
-  // Engine Startup
-  console.log(`${LOG_PREFIX} Engine Loaded. Processing Command Queue...`);
   var queue = window.FaceifyCarouselQueue || [];
   
   if (queue.length === 0) {
@@ -172,7 +158,6 @@
   // Hijack the queue so future pushes instantly execute
   window.FaceifyCarouselQueue = {
     push: function(item) {
-      console.log(`${LOG_PREFIX} New embed detected on the fly! Pushing to factory...`);
       createCarousel(item.targetId, item.galleryId, item.config);
     }
   };
