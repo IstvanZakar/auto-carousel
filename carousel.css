@@ -1,3 +1,4 @@
+/* --- Core Slider & Layout --- */
 [v-cloak] { display: none; }
 
 .slider {
@@ -9,8 +10,7 @@
   touch-action: pan-y;
   border-radius: var(--container-radius);
 
-  /* 🚨 THE GRADIENT MASK 🚨 */
-  /* This creates a fade-in at 0-15% and a fade-out at 85-100% */
+  /* The Gradient Mask for smooth edges */
   -webkit-mask-image: linear-gradient(
     to right,
     rgba(0, 0, 0, 0) 0%,
@@ -26,6 +26,7 @@
     rgba(0, 0, 0, 0) 100%
   );
 }
+
 .slider:active { cursor: grabbing; }
 
 .slider-track {
@@ -56,67 +57,87 @@
   padding-bottom: 20px;
 }
 
-.slider__image h2 {
-  color: var(--text-color);
-  font-size: var(--title-size);
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
-  pointer-events: none;
-  text-align: center;
-  margin: 0;
-  padding: 0 15px;
-}
-
+/* --- Lightbox Overlay --- */
 .lightbox {
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.95); /* Slightly darker for boutique feel */
   z-index: 9999;
   display: flex;
-  align-items: center; justify-content: center;
+  align-items: center; 
+  justify-content: center;
 }
+
+/* Container that hugs the image and holds arrows */
+.lightbox-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 95%;
+  max-height: 95%;
+}
+
 .lightbox-img {
-  max-width: 90%; max-height: 90%;
+  display: block;
+  max-width: 100%;
+  max-height: 85vh; /* Prevents arrows from being too far apart */
   border-radius: 4px;
-  box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-}
-/* Position the buttons on the sides of the lightbox */
-.lightbox-prev, .lightbox-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
-    color: white;
-    border: none;
-    padding: 16px;
-    cursor: pointer;
-    font-size: 24px;
-    z-index: 10;
-    transition: 0.3s;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
 }
 
-.lightbox-prev { left: 10px; }
-.lightbox-next { right: 10px; }
-
-.lightbox-prev:hover, .lightbox-next:hover {
-    background: rgba(0,0,0,0.8);
+/* --- Minimalist Arrows --- */
+.lightbox-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  border: none;
+  padding: 20px;
+  cursor: pointer;
+  font-size: 60px;
+  z-index: 10000;
+  transition: all 0.2s ease-in-out;
+  text-shadow: 0px 0px 15px rgba(0,0,0,0.9);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.lightbox-caption {
-    position: absolute;
-    bottom: 20px;
-    color: white;
-    width: 100%;
-    text-align: center;
-    font-weight: bold;
+.lightbox-nav-btn:hover {
+  color: #fff;
+  transform: translateY(-50%) scale(1.15);
 }
+
+.lightbox-nav-btn.prev { left: 0px; }
+.lightbox-nav-btn.next { right: 0px; }
+
+/* --- UI Controls --- */
 .lightbox-close {
   position: absolute;
-  top: 20px; right: 30px;
-  color: white; font-size: 40px;
-  cursor: pointer; user-select: none;
+  top: 20px; 
+  right: 30px;
+  color: white; 
+  font-size: 40px;
+  cursor: pointer; 
+  user-select: none;
+  z-index: 10001;
+  transition: color 0.2s;
 }
+
 .lightbox-close:hover { color: #ccc; }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+/* --- Transitions --- */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
 .fade-enter, .fade-leave-to { opacity: 0; }
+
+/* --- Mobile Refinements --- */
+@media (max-width: 768px) {
+  .lightbox-nav-btn {
+    font-size: 45px;
+    padding: 15px;
+  }
+  .lightbox-nav-btn.prev { left: -5px; }
+  .lightbox-nav-btn.next { right: -5px; }
+}
