@@ -80,6 +80,36 @@
   border-radius: 4px;
   box-shadow: 0 5px 25px rgba(0,0,0,0.5);
 }
+/* Position the buttons on the sides of the lightbox */
+.lightbox-prev, .lightbox-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    padding: 16px;
+    cursor: pointer;
+    font-size: 24px;
+    z-index: 10;
+    transition: 0.3s;
+}
+
+.lightbox-prev { left: 10px; }
+.lightbox-next { right: 10px; }
+
+.lightbox-prev:hover, .lightbox-next:hover {
+    background: rgba(0,0,0,0.8);
+}
+
+.lightbox-caption {
+    position: absolute;
+    bottom: 20px;
+    color: white;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+}
 .lightbox-close {
   position: absolute;
   top: 20px; right: 30px;
