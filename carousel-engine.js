@@ -53,6 +53,7 @@
       el: "#" + targetId,
       data: {
         config: instanceConfig,
+        currentIdx: 0,
         lightboxOpen: false,
         currentLightboxImage: '',
         percentX: 0,
@@ -124,13 +125,24 @@
           if (this.draggedDistance > 5) return;
           this.openLightbox(imageUrl);
         },
-        openLightbox(imageUrl) {
-          this.currentLightboxImage = imageUrl;
+        openLightbox(index) {
+          this.currentIdx = index;
           this.lightboxOpen = true;
         },
         closeLightbox() {
           this.lightboxOpen = false;
-          this.currentLightboxImage = '';
+        },
+        nextImage() {
+          // Wrap around to 0 if at the end
+          this.currentIdx = (this.currentIdx + 1) % this.config.slides.length;
+        },
+        prevImage() {
+          // Wrap around to last if at the start
+          this.currentIdx = (this.currentIdx - 1 + this.config.slides.length) % this.config.slides.length;
+        },
+        handleSlideClick(index) {
+          if (this.draggedDistance > 5) return;
+          this.openLightbox(index);
         }
       },
       mounted() {
