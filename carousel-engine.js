@@ -103,48 +103,47 @@
           this.animationFrameId = requestAnimationFrame(this.animate);
         },
         startDrag(e) {
-          this.isDragging = true;
-          this.draggedDistance = 0;
-          this.startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-        },
-        onDrag(e) {
-          if (!this.isDragging) return;
-          const currentX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-          const deltaX = currentX - this.startX;
-          this.draggedDistance += Math.abs(deltaX);
-          const trackWidthInPixels = this.$refs.track.offsetWidth;
-          const deltaPercent = (deltaX / trackWidthInPixels) * 100;
-          this.percentX += deltaPercent;
-          this.startX = currentX;
-        },
-        endDrag() {
-          this.isDragging = false;
-          this.isHovered = false;
-        },
-        handleSlideClick(imageUrl) {
-          if (this.draggedDistance > 5) return;
-          this.openLightbox(imageUrl);
-        },
-        openLightbox(index) {
-          this.currentIdx = index;
-          this.lightboxOpen = true;
-        },
-        closeLightbox() {
-          this.lightboxOpen = false;
-        },
-        nextImage() {
-          // Wrap around to 0 if at the end
-          this.currentIdx = (this.currentIdx + 1) % this.config.slides.length;
-        },
-        prevImage() {
-          // Wrap around to last if at the start
-          this.currentIdx = (this.currentIdx - 1 + this.config.slides.length) % this.config.slides.length;
-        },
-        handleSlideClick(index) {
-          if (this.draggedDistance > 5) return;
-          this.openLightbox(index);
-        }
-      },
+       this.isDragging = true;
+       this.draggedDistance = 0;
+       this.startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+     },
+     onDrag(e) {
+       if (!this.isDragging) return;
+       const currentX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+       const deltaX = currentX - this.startX;
+       this.draggedDistance += Math.abs(deltaX);
+       const trackWidthInPixels = this.$refs.track.offsetWidth;
+       const deltaPercent = (deltaX / trackWidthInPixels) * 100;
+       this.percentX += deltaPercent;
+       this.startX = currentX;
+     },
+     endDrag() {
+       this.isDragging = false;
+       this.isHovered = false;
+     },
+     // ONLY ONE handleSlideClick function:
+     handleSlideClick(virtualIndex) {
+       if (this.draggedDistance > 5) return;
+       // Map the infinite scroll index back to the real data index
+       const realIndex = virtualIndex % this.config.slides.length;
+       this.openLightbox(realIndex);
+     },
+  openLightbox(index) {
+    this.currentIdx = index;
+    this.lightboxOpen = true;
+    document.body.style.overflow = 'hidden'; // Pro touch: lock background
+  },
+  closeLightbox() {
+    this.lightboxOpen = false;
+    document.body.style.overflow = '';
+  },
+  nextImage() {
+    this.currentIdx = (this.currentIdx + 1) % this.config.slides.length;
+  },
+  prevImage() {
+    this.currentIdx = (this.currentIdx - 1 + this.config.slides.length) % this.config.slides.length;
+  }
+}
       mounted() {
         if (this.duplicatedSlides.length > 0) {
           this.animationFrameId = requestAnimationFrame(this.animate);
